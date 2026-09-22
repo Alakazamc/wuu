@@ -70,8 +70,7 @@ export interface BrowserWebContentsHandle {
   stop(): void;
   isLoading(): boolean;
   executeJavaScript(code: string): Promise<unknown>;
-  // User-origin CSS outranks page styles. The preview card uses it to stop
-  // scrollbar paint without giving the page a way to draw the bar back.
+  // The preview card temporarily suppresses scrollbar paint.
   insertCSS(css: string, options?: { cssOrigin?: "user" | "author" }): Promise<string>;
   removeInsertedCSS(key: string): Promise<void>;
   // UI zoom scales rendering only. CDP input coordinates and the layout
@@ -929,6 +928,11 @@ export class BrowserHostCoordinator {
     };
     contents.on("did-navigate", onNavigate);
     contents.on("did-navigate-in-page", onNavigate);
+    contents.on("dom-ready", () => {
+      // insertCSS belongs to the document, so navigation and reload discard it
+      // even when the tab stays mounted on the watch-only card.
+      if (entry.presented && !entry.inPanel) this.applySpectatorScrollbars(entry);
+    });
     contents.on("did-start-loading", () => {
       entry.loading = true;
       entry.loadError = undefined;
@@ -1198,7 +1202,10 @@ export class BrowserHostCoordinator {
     if (!entry.presented || entry.inPanel) return;
     let key = "";
     try {
-      key = await contents.insertCSS(spectatorScrollbarCSS(overlay), { cssOrigin: "user" });
+      // Electron 44 removes author sheets correctly, but leaves user-origin
+      // sheets applied after removeInsertedCSS. Use a removable sheet so a
+      // panel takeover restores the page's scrollbars.
+      key = await contents.insertCSS(spectatorScrollbarCSS(overlay), { cssOrigin: "author" });
     } catch {
       return;
     }

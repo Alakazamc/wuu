@@ -50,6 +50,9 @@ Versioning rules are documented in [the release guide](docs/en/project/release.m
 
 ### Fixed
 
+- Floating browser previews keep scrollbars hidden after navigation and reload,
+  and restore them when the page opens in the full browser panel.
+
 - File tools no longer treat source files such as `credentials.go` as credential
   stores only because the name contains `credential` or `secret`. Credential
   stores such as `credentials.json` and `secrets.yaml` stay protected in every

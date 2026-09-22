@@ -1212,6 +1212,39 @@ describe("BrowserHostCoordinator preview surface accessors", () => {
     expect(view.zoomFactor).toBe(1);
   });
 
+  it("reinstalls the spectator sheet for new documents only while the card owns the tab", async () => {
+    const harness = makeHarness();
+    await openTab(harness, "/repo", "t1");
+    const view = harness.views[0];
+    const documentReady = () => {
+      // Electron drops injected styles when navigation replaces the document.
+      view.insertedCSS.clear();
+      for (const listener of view.listeners.get("dom-ready") ?? []) listener();
+    };
+    documentReady();
+    await flushMicrotasks();
+    expect(view.insertedCSS.size).toBe(0);
+
+    harness.coordinator.mountTabOnWindow("/repo", "t1", new FakeWindow(), { x: 0, y: 0, width: 260, height: 163 }, 0.203);
+    await flushMicrotasks();
+    for (let document = 0; document < 2; document += 1) {
+      documentReady();
+      await flushMicrotasks();
+      expect(view.insertedCSS.size).toBe(1);
+    }
+
+    // A panel takeover during the asynchronous install must cancel it too.
+    documentReady();
+    await harness.coordinator.handleServerRequest(
+      serverRequest("browser/set_visibility", { workdir: "/repo", tab_id: "t1", visible: true }, "vis-document"),
+    );
+    await flushMicrotasks();
+    expect(view.insertedCSS.size).toBe(0);
+    documentReady();
+    await flushMicrotasks();
+    expect(view.insertedCSS.size).toBe(0);
+  });
+
   it("normalizes zoom when a takeover adopts a PiP-mounted tab, and refuses to yank it back", async () => {
     const harness = makeHarness();
     await openTab(harness, "/repo", "t1");
