@@ -78,6 +78,25 @@ export function boundsChanged(
 
 // Prefer the inner host. Fall back to the frame when the host has no area
 // so the page still has a rectangle to occupy.
+// A WebContentsView is a native sibling of the window, so CSS overflow cannot
+// clip it. Layout should already keep the host inside the viewport; this
+// intersection is the last guard when a measured box still crosses the edge.
+export function clipRectToViewport(
+  rect: BrowserBoundsRect,
+  viewport: { width: number; height: number },
+): BrowserBoundsRect {
+  const left = Math.max(0, rect.x);
+  const top = Math.max(0, rect.y);
+  const right = Math.min(viewport.width, rect.x + rect.width);
+  const bottom = Math.min(viewport.height, rect.y + rect.height);
+  return {
+    x: left,
+    y: top,
+    width: Math.max(0, right - left),
+    height: Math.max(0, bottom - top),
+  };
+}
+
 export function pickBoundsRect(
   hostRect: BrowserBoundsRect | undefined,
   frameRect: BrowserBoundsRect | undefined,
@@ -145,19 +164,37 @@ function measureRect(element: Element | null): BrowserBoundsRect | undefined {
     return undefined;
   }
   const rect = element.getBoundingClientRect();
-  return roundRect({
-    x: rect.left,
-    y: rect.top,
-    width: rect.width,
-    height: rect.height,
-  });
+  return roundRect(clipRectToViewport(
+    {
+      x: rect.left,
+      y: rect.top,
+      width: rect.width,
+      height: rect.height,
+    },
+    { width: window.innerWidth, height: window.innerHeight },
+  ));
 }
 
 function measureBrowserPanelRect(
   host: Element | null,
   frame: Element | null,
 ): BrowserBoundsRect | undefined {
-  return pickBoundsRect(measureRect(host), measureRect(frame));
+  const rect = pickBoundsRect(measureRect(host), measureRect(frame));
+  const panel = (host ?? frame)?.closest(".workspace-right-panel");
+  if (!rect || !panel) return rect;
+  // Native views do not inherit the panel's overflow clip. Intersect with
+  // its visible box as well as the viewport before crossing the IPC boundary.
+  const bounds = panel.getBoundingClientRect();
+  const left = Math.max(rect.x, bounds.left);
+  const top = Math.max(rect.y, bounds.top);
+  const right = Math.min(rect.x + rect.width, bounds.right);
+  const bottom = Math.min(rect.y + rect.height, bounds.bottom);
+  return {
+    x: Math.ceil(left),
+    y: Math.ceil(top),
+    width: Math.max(0, Math.floor(right) - Math.ceil(left)),
+    height: Math.max(0, Math.floor(bottom) - Math.ceil(top)),
+  };
 }
 
 const BOUNDS_TRANSITION_PROPERTIES = new Set([

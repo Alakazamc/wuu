@@ -134,7 +134,12 @@
 .app-shell .workspace-right-panel[data-sheet="open"],
 .app-shell .workspace-right-panel[data-sheet="parked"] {
   position: fixed;
-  inset: 0 0 0 var(--workspace-sheet-left, 0px);
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: var(--workspace-sheet-left, 0px);
+  width: auto;
+  max-width: calc(100vw - var(--workspace-sheet-left, 0px));
   /* Above the conversation, below an open sidebar drawer. A docked sidebar
    * remains outside the sheet's left edge and stays interactive. */
   z-index: 130;
@@ -156,7 +161,7 @@
 .app-shell .workspace-right-panel[data-sheet="arming"],
 .app-shell .workspace-right-panel[data-sheet="parked"] {
   transform: translate3d(
-    calc(100% - var(--workspace-right-panel-width, 360px)),
+    max(0px, calc(100% - var(--workspace-right-panel-width, 360px))),
     0,
     0
   ) scale(1);

@@ -6,6 +6,7 @@ import {
   computeForegroundPromotion,
   computeForegroundRetreat,
   displayedBrowserTabID,
+  clipRectToViewport,
   isForegroundControlled,
   isMeasurableRect,
   observeBrowserPanelBounds,
@@ -84,6 +85,18 @@ describe("rect math", () => {
     expect(boundsChanged(base, { ...base, width: 5 })).toBe(true);
     expect(boundsChanged(base, { ...base, height: 5 })).toBe(true);
   });
+
+  it("keeps only the part of a panel rect that is inside the window", () => {
+    const viewport = { width: 800, height: 600 };
+    expect(clipRectToViewport(
+      { x: -120, y: 48, width: 1040, height: 700 },
+      viewport,
+    )).toEqual({ x: 0, y: 48, width: 800, height: 552 });
+    expect(clipRectToViewport(
+      { x: 900, y: 48, width: 360, height: 400 },
+      viewport,
+    )).toEqual({ x: 900, y: 48, width: 0, height: 400 });
+  });
 });
 
 describe("pickBoundsRect", () => {
@@ -107,6 +120,33 @@ describe("pickBoundsRect", () => {
 });
 
 describe("observeBrowserPanelBounds", () => {
+  it("clips native painting to the panel and reports when it leaves the viewport", () => {
+    const panel = document.createElement("aside");
+    panel.className = "workspace-right-panel";
+    const host = document.createElement("div");
+    host.className = "workspace-browser-host";
+    panel.append(host);
+    document.body.append(panel);
+    vi.spyOn(host, "getBoundingClientRect").mockReturnValue(new DOMRect(-100, 40, 700, 600));
+    const panelRect = vi.spyOn(panel, "getBoundingClientRect")
+      .mockReturnValue(new DOMRect(240, 0, 360, 500));
+    const frames: FrameRequestCallback[] = [];
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+      frames.push(callback);
+      return frames.length;
+    });
+    vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
+    const report = vi.fn();
+    const cleanup = observeBrowserPanelBounds(report);
+    frames.shift()?.(0);
+    expect(report).toHaveBeenLastCalledWith({ x: 240, y: 40, width: 360, height: 460 });
+    panelRect.mockReturnValue(new DOMRect(window.innerWidth + 10, 0, 360, 500));
+    window.dispatchEvent(new Event("resize"));
+    frames.shift()?.(16);
+    expect(report.mock.lastCall?.[0].width).toBe(0);
+    cleanup();
+  });
+
   it("stops requesting frames after a stable measurement", () => {
     const frame = document.createElement("div");
     frame.className = "workspace-browser-frame";

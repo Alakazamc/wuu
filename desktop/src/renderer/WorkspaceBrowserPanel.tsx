@@ -251,7 +251,11 @@ export function WorkspaceBrowserPanel({
     }
     let first = true;
     const stop = observeBrowserPanelBounds((rect) => {
-      if (rect.width <= 0 || rect.height <= 0) return;
+      if (rect.width <= 0 || rect.height <= 0) {
+        report(workdir, selectedTabID, null);
+        first = true;
+        return;
+      }
       report(workdir, selectedTabID, rect, first);
       first = false;
     });
