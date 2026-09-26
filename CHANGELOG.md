@@ -128,6 +128,9 @@ Versioning rules are documented in [the release guide](docs/en/project/release.m
 
 ### Fixed
 
+- Project status now shares the conversation capsule row with TODO and plugin
+  status, using consistent sizing and alignment above the composer.
+
 - Keep sidebar conversation titles and fork markers clear of the status dot
   while a conversation is loading.
 
