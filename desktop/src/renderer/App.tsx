@@ -28,6 +28,7 @@ import type {
   EngineListResult,
   EngineUpdateParams,
   ExtensionPackageUpdateParams,
+  GitStatusResult,
   InitializeResult,
   InputFile,
   InputImage,
@@ -1193,6 +1194,12 @@ export function App(): JSX.Element {
   // child model/effort choice when the user switches back within the draft.
   const draftEngineRuntimeByID = useRef<Record<string, EngineRuntimeSelection>>({});
   const [draftPermissionMode, setDraftPermissionMode] = useState<PermissionMode | "">("");
+  // Present while the next conversation starts in its own worktree. It belongs
+  // to one project root, so switching projects never carries one repository's
+  // start branch into another. An empty start branch means the project's HEAD.
+  const [draftWorktree, setDraftWorktree] = useState<{ cwd: string; startBranch: string }>();
+  const draftWorktreeFor = (context: RuntimeContext | undefined, gitStatus: GitStatusResult | undefined) =>
+    draftWorktree && gitStatus?.is_repo && draftWorktree.cwd === context?.cwd ? draftWorktree : undefined;
   const draftEngineSeed = useRef<{ threadID?: string; done: boolean }>({
     threadID: activeThreadID,
     done: false,
@@ -1203,6 +1210,7 @@ export function App(): JSX.Element {
       setDraftEngine("");
       setDraftEngineRuntime({ model: "", effort: "" });
       setDraftPermissionMode("");
+      setDraftWorktree(undefined);
     }
     // Only a brand-new conversation seeds from memory. An open thread is
     // already bound to its engine, and a seeded draft would otherwise win the
@@ -2981,6 +2989,7 @@ export function App(): JSX.Element {
       || (!activeThread && effectiveEngine !== "wuu"
         ? draftPermissionMode || "unconfined"
         : conversationRuntime?.permissions?.mode);
+    const composerWorktree = draftWorktreeFor(state.activeContext, state.gitStatus);
     const composerRuntime = conversationRuntime && composerPermissionMode
       ? {
           ...conversationRuntime,
@@ -3094,6 +3103,19 @@ export function App(): JSX.Element {
         }}
         gitStatus={state.gitStatus}
         branchPickerDisabled={viewContextSwitchPending}
+        worktree={activeProjectDraft ? undefined : {
+          enabled: Boolean(composerWorktree),
+          startBranch: composerWorktree?.startBranch ?? "",
+          onToggle: () => {
+            const cwd = state.activeContext?.cwd;
+            setDraftWorktree(composerWorktree || !cwd ? undefined : { cwd, startBranch: "" });
+          },
+          onSelectStartBranch: (startBranch) => {
+            const cwd = state.activeContext?.cwd;
+            if (cwd) setDraftWorktree({ cwd, startBranch });
+            setBranchMenuOpen(false);
+          },
+        }}
         projects={state.projects}
         activeContext={state.activeContext}
         activeWorkspace={activeWorkspace}
@@ -4391,6 +4413,7 @@ export function App(): JSX.Element {
       effort: draftEngineRuntime.effort || defaultExternalRuntime.effort,
       speed: draftEngineRuntime.speed,
     };
+    const newThreadWorktree = targetThread ? undefined : draftWorktreeFor(activeContext, currentState.gitStatus);
     let resolveAdmission!: TurnAdmission["resolve"];
     let cancelPreparation!: () => void;
     const admission: TurnAdmission = {
@@ -4444,6 +4467,12 @@ export function App(): JSX.Element {
             speed: currentState.initialized?.speed,
           } satisfies ThreadStartParams : {
             ...(draftEngine ? { engine: draftEngine } : {}),
+            ...(newThreadWorktree
+              ? {
+                  workspace: "worktree",
+                  ...(newThreadWorktree.startBranch ? { base_revision: newThreadWorktree.startBranch } : {}),
+                } satisfies ThreadStartParams
+              : {}),
             ...(newThreadEngine !== "wuu"
               ? {
                   ...newThreadEngineRuntime,

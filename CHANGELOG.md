@@ -10,6 +10,9 @@ Versioning rules are documented in [the release guide](docs/en/project/release.m
 
 ### Added
 
+- New conversations can start in an isolated Git worktree from the composer's
+  branch selector. The project keeps its current branch and uncommitted changes;
+  the worktree toggle resets for the next conversation.
 - Projects: a coordinator conversation for a larger piece of work in one
   workspace. Create one from the workspace menu; a workspace can hold several.
   The coordinator reads the workspace but cannot change it. It delegates every

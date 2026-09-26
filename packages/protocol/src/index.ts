@@ -1636,6 +1636,10 @@ export type ThreadStartParams = {
   permission_mode?: string;
   approve_for_me?: boolean;
   provider?: string;
+  /** `worktree` starts in an isolated Git worktree; the default is `shared`. */
+  workspace?: "shared" | "worktree";
+  /** Branch, tag, or commit a worktree starts from; defaults to the project's HEAD. */
+  base_revision?: string;
   handoff?: ThreadHandoffParams;
   // Start a project coordinator in the workspace instead of a conversation.
   project?: { name: string };
