@@ -62,8 +62,8 @@ Versioning rules are documented in [the release guide](docs/en/project/release.m
 
 - Workspace conversation lists show five recent entries plus active, running,
   unread, and up to three recently read conversations. Recently read entries
-  expire after two minutes. Expanding includes all history inside an eight-row,
-  font-responsive scroll area, keeping other workspaces in place.
+  expire after two minutes. Expanding includes all history. Workspace lists use
+  the shared sidebar scroll area, so scrolling over a conversation moves the outer list.
 
 - The Extensions page follows the settings layout: a titled page with its
   actions beside the title, then plugins, official skills, and your skills as
