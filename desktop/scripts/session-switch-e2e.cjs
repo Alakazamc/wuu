@@ -1,9 +1,11 @@
 // Real Electron/main/preload/Go round trips against disposable synthetic data.
 // Build Electron and the core first; WUU_DESKTOP_CORE selects the tested binary.
-// No inference is sent. Timings are diagnostic, not hardware-dependent gates.
+// No external inference is sent. Timings are diagnostic, not hardware-dependent gates.
 // WUU_SWITCH_TURNS=3000 stresses history; WUU_SWITCH_VARIANT=narrow checks dark/20px.
 // WUU_SWITCH_SAFE_MODE=0 includes plugin startup; default 1 isolates transport costs.
 // WUU_SWITCH_MAIN may select a separately built baseline main-process bundle.
+// WUU_SWITCH_STREAM=1 also streams 128 KiB from a local synthetic SSE provider
+// across workspace switches, through the real core, IPC, and renderer.
 // WUU_SWITCH_ROUNDS controls warm repeats. Defaults live in the budget fixture.
 // WUU_SWITCH_INIT_DELAY_MS injects a readiness fault; never pool it with baseline.
 // WUU_SWITCH_CHECK_BUDGET=1 checks settled work counters, never wall-clock time.
@@ -15,6 +17,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { createHash } = require('node:crypto');
 const { spawnSync } = require('node:child_process');
+const http = require('node:http');
 const childProcess = require('node:child_process');
 const { syncBuiltinESMExports } = require('node:module');
 const originalSpawn = childProcess.spawn;
@@ -60,6 +63,8 @@ process.env.WUU_DESKTOP_CORE ||= path.join(desktop, 'build/bin/wuu-core');
 process.env.WUU_ENABLE_BROWSER = '0';
 process.env.WUU_SAFE_MODE = safeMode;
 process.env.WUU_DESKTOP_DISABLE_DEV_CACHE_CLEANUP = '1';
+// A shell inherited from make dev must still exercise this checkout's build.
+delete process.env.ELECTRON_RENDERER_URL;
 const projects = Array.from({ length: 6 }, (_, i) => {
   const cwd = path.join(fixture, `project-${i}`);
   fs.mkdirSync(cwd);
@@ -130,9 +135,105 @@ async function waitFor(win, fn, arg, timeout = 30000) {
   throw new Error(`Timed out: ${fn}`);
 }
 const results = [];
+async function showSessionSidebar(win) {
+  await evaluate(win, () => {
+    document.querySelector('.conversation-pane [data-wuu-component="sidebar-toggle"][aria-pressed="false"]')?.click();
+  });
+}
+let providerServer;
+let providerResponse;
+let receiveProviderRequest;
+const providerRequest = new Promise(resolve => { receiveProviderRequest = resolve; });
+async function startFixtureProvider() {
+  if (process.env.WUU_SWITCH_STREAM !== '1') return;
+  providerServer = http.createServer((req, res) => {
+    if (req.method !== 'POST' || req.url !== '/v1/chat/completions') {
+      res.writeHead(404).end();
+      return;
+    }
+    req.resume();
+    req.on('end', () => {
+      res.writeHead(200, { 'Content-Type': 'text/event-stream' });
+      providerResponse = res;
+      receiveProviderRequest();
+    });
+  });
+  await new Promise(resolve => providerServer.listen(0, '127.0.0.1', resolve));
+  const configPath = path.join(home, 'config.json');
+  const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  config.providers.fixture.base_url = `http://127.0.0.1:${providerServer.address().port}/v1`;
+  fs.writeFileSync(configPath, JSON.stringify(config));
+}
+async function checkStreaming(win) {
+  if (!providerServer) return;
+  // Streaming switches check recovery separately from the idle draft benchmark.
+  async function switchStreamingTo(index) {
+    await showSessionSidebar(win);
+    await evaluate(win, index => {
+      const row = [...document.querySelectorAll('.thread-row')].find(n => n.textContent.includes(`Switch session ${index}`));
+      (row.querySelector('.thread-row-main') || row).click();
+    }, index);
+    await waitFor(win, index => !!document.querySelector(`.cached-conversation-pane[data-active="true"][data-thread-id="switch-thread-${index}"]`), index);
+    await waitFor(win, index => window.wuu.initialize().then(r => r.workspace_root.endsWith(`project-${index}`)), index);
+  }
+  await switchStreamingTo(5);
+  const text = 'ISSUE429-STREAM:' + '0123456789abcdef'.repeat(8191);
+  const startedAt = performance.now();
+  await evaluate(win, async () => {
+    window.streamFixture = { deltas: 0, completed: false };
+    window.stopStreamFixture = window.wuu.onServerEvent(event => {
+      if (event.kind !== 'notification') return;
+      const { method, params } = event.message;
+      if (params?.thread_id !== 'switch-thread-5') return;
+      if (method === 'item/agentMessage/delta') window.streamFixture.deltas++;
+      if (method === 'turn/completed') window.streamFixture.completed = true;
+    });
+    await window.wuu.startTurn('switch-thread-5', 'Run the local streaming fixture.');
+  });
+  await providerRequest;
+  async function sendUntil(start, end) {
+    for (let offset = start; offset < end; offset += 16) {
+      providerResponse.write(`data: ${JSON.stringify({ id: 'fixture', object: 'chat.completion.chunk', choices: [{ index: 0, delta: { content: text.slice(offset, offset + 16) }, finish_reason: null }] })}\n\n`);
+      if (offset % 1024 === 0) await new Promise(setImmediate);
+    }
+  }
+  await sendUntil(0, 4096);
+  await waitFor(win, () => document.querySelector('.conversation-pane')?.textContent.includes('ISSUE429-STREAM:'));
+  const readText = () => evaluate(win, async () => {
+    const result = await window.wuu.resumeThread('switch-thread-5');
+    const turn = result.thread.turns.at(-1);
+    return { status: turn.status, texts: turn.items.filter(item => item.type === 'agent_message').map(item => item.text) };
+  });
+  await waitFor(win, async () => {
+    const result = await window.wuu.resumeThread('switch-thread-5');
+    return result.thread.turns.at(-1).items.some(item => item.type === 'agent_message' && item.text?.length === 4096);
+  });
+  assert.deepEqual((await readText()).texts, [text.slice(0, 4096)]);
+  await switchStreamingTo(0);
+  await sendUntil(4096, 65536);
+  await switchStreamingTo(5);
+  await waitFor(win, async () => {
+    const result = await window.wuu.resumeThread('switch-thread-5');
+    return result.thread.turns.at(-1).items.some(item => item.type === 'agent_message' && item.text?.length === 65536);
+  });
+  assert.deepEqual((await readText()).texts, [text.slice(0, 65536)]);
+  await sendUntil(65536, text.length);
+  providerResponse.end(`data: ${JSON.stringify({ id: 'fixture', object: 'chat.completion.chunk', choices: [{ index: 0, delta: {}, finish_reason: 'stop' }] })}\n\ndata: [DONE]\n\n`);
+  await waitFor(win, () => window.streamFixture.completed);
+  const final = await readText();
+  assert.equal(final.status, 'completed');
+  assert.deepEqual(final.texts, [text]);
+  await waitFor(win, () => document.querySelector('.conversation-pane')?.textContent.includes('ISSUE429-STREAM:'));
+  const deltas = await evaluate(win, () => { window.stopStreamFixture(); return window.streamFixture.deltas; });
+  const result = { bytes: text.length, providerChunkBytes: 16, rendererDeltaEvents: deltas, elapsedMs: +(performance.now() - startedAt).toFixed(1), snapshots: [4096, 65536, text.length] };
+  fs.writeFileSync(path.join(output, 'stream-results.json'), JSON.stringify(result, null, 2));
+  console.log('STREAM', JSON.stringify(result));
+  providerServer.close();
+}
 // Startup automatically restores project 0 before the first measured click.
 const seen = new Set([0]);
 async function switchTo(win, index, scenario) {
+  await showSessionSidebar(win);
   await waitFor(win, index => {
     const row = [...document.querySelectorAll('.thread-row')].find(n => n.textContent.includes(`Switch session ${index}`));
     if (!row) return false;
@@ -301,8 +402,8 @@ async function switchTo(win, index, scenario) {
 }
 let main;
 app.on('browser-window-created', (_event, win) => { main ||= win; });
-const timeout = setTimeout(() => { console.error('E2E timeout', fixture); app.exit(1); }, 120000 + rounds * 15000);
-import(pathToFileURL(mainBundle).href).then(async () => {
+const timeout = setTimeout(() => { console.error('E2E timeout', fixture); app.exit(1); }, 120000 + rounds * 15000 + (process.env.WUU_SWITCH_STREAM === '1' ? 60000 : 0));
+startFixtureProvider().then(() => import(pathToFileURL(mainBundle).href)).then(async () => {
   while (!main) await delay(25);
   main.webContents.on('console-message', (_e, level, message) => { if (level >= 3) console.error(message); });
   await waitFor(main, () => document.querySelector('.composer textarea'));
@@ -418,6 +519,7 @@ import(pathToFileURL(mainBundle).href).then(async () => {
     '', 'Wall-clock samples are diagnostic, not thresholds. Do not pool scenarios, runtimes, or traced runs, or compare against the old paintMs/readyMs definition. Full samples and build hashes are in results.json.', '',
   ].join('\n');
   fs.writeFileSync(path.join(output, 'report.md'), report);
+  await checkStreaming(main);
   fs.writeFileSync(path.join(output, 'final.png'), (await main.webContents.capturePage()).toPNG());
   console.log('RESULTS', path.join(output, 'results.json'));
   clearTimeout(timeout);

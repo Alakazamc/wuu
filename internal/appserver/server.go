@@ -143,6 +143,7 @@ type threadState struct {
 	agentStream           *agentMessageStream
 	activeReasoningItemID string
 	toolItems             map[string]string
+	streamText            map[string]*strings.Builder
 	hiddenToolEvent       bool
 }
 
