@@ -89,6 +89,7 @@ contextBridge.exposeInMainWorld("wuu", {
   }),
   initialize: async () => ({
     protocol_version: "e2e",
+    features: { project_agent: Boolean(process.env.WUU_PROJECT_PANEL_E2E) },
     provider: "e2e",
     model: "mock-stream",
     workspace_root: cwd,
@@ -113,6 +114,12 @@ contextBridge.exposeInMainWorld("wuu", {
   },
   resumeThread: async (id) => ({ thread: threads.get(id) ?? null }),
   forkThread: async () => ({ thread: null }),
+  editThreadMessage: async (threadId) => {
+    await ipcRenderer.invoke("test:request-lifecycle", "thread/edit-message", { threadId });
+    const thread = { ...threads.get(threadId), turns: [], status: "idle" };
+    threads.set(threadId, thread);
+    return { thread };
+  },
   listThreads: async () => ({ threads: process.env.WUU_STREAM_E2E_SIDEBAR_THREADS || process.env.WUU_PROJECT_PANEL_E2E ? [...threads.values()] : [] }),
   listArchivedThreads: async () => ({ threads: [] }),
   queueTurn: async (threadId, text, _images, id, _files, _permission, _document, _parts, _context, hold) => {
@@ -124,11 +131,12 @@ contextBridge.exposeInMainWorld("wuu", {
     return { turn_id: turnId };
   },
   startTurn: async (threadId, text, images = [], _files, _permission, _document, _parts, _context, clientId) => {
-    if (process.env.WUU_REQUEST_LIFECYCLE_E2E) await ipcRenderer.invoke("test:request-lifecycle", "turn/start", { threadId, text, clientId });
+    const turnId = process.env.WUU_REQUEST_LIFECYCLE_E2E ? `turn-${clientId}` : `turn-${threadId}`;
+    if (process.env.WUU_REQUEST_LIFECYCLE_E2E) await ipcRenderer.invoke("test:request-lifecycle", "turn/start", { threadId, turnId, text, clientId });
     const now = new Date().toISOString();
     return {
       turn: {
-        id: `turn-${threadId}`,
+        id: turnId,
         items: [
           {
             id: `user-${threadId}`,
