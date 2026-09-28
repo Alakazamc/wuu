@@ -59,7 +59,29 @@
   --conversation-turn-boundary-gap: 16px;
   --conversation-turn-item-gap: 8px;
   --conversation-image-gap: max(var(--space-6), calc(var(--conversation-message-font-size) * 1.2));
-  --conversation-composer-clearance: 12px;
+  /* One leading for everything read or typed in a conversation: answers,
+     sent queries and every composer draft, including composers outside
+     .conversation-pane. A relaxed body line makes mixed CJK, Latin and inline
+     code read as one continuous answer instead of a stack of dense rows. */
+  --conversation-reading-line-height: round(nearest, calc(var(--conversation-message-font-size) * 1.8), 2px);
+  /* Framed text (the query bubble and the composer draft) keeps its glyphs
+     --card-padding from the frame on every side: the block padding gives back
+     the line's half-leading, so the inset holds at every text size. The floor
+     keeps the first line clear of the composer's rounded corner where narrow
+     panes reduce the card padding. */
+  --conversation-framed-text-inset-block: max(
+    var(--space-2),
+    round(
+      nearest,
+      calc(var(--card-padding) - (var(--conversation-reading-line-height) - var(--conversation-message-font-size)) / 2),
+      1px
+    )
+  );
+  /* Transparent dock space above the composer frame. It is part of the gap
+     between the latest turn and the input, so the clearance subtracts it and
+     that gap stays one group gap at every window width. */
+  --conversation-dock-top-space: clamp(12px, calc(0.833333vw + 8.666667px), 16px);
+  --conversation-composer-clearance: calc(var(--section-gap) - var(--conversation-dock-top-space));
 }
 
 .conversation-pane {
@@ -101,9 +123,6 @@
   /* Reading rhythm follows the user's text size. Keep related blocks
    * closer than sections, with headings attached to the text below.
    * Prose, previews and composer share the same column measure. */
-  /* A relaxed body line makes mixed CJK, Latin and inline code read as one
-     continuous answer instead of a stack of dense rows. */
-  --conversation-reading-line-height: round(nearest, calc(var(--conversation-message-font-size) * 1.8), 2px);
   /* Providers may confirm an answer only after streaming finishes. Its
      provisional process placement must use the final reading rhythm. */
   --conversation-commentary-line-height: var(--conversation-reading-line-height);
