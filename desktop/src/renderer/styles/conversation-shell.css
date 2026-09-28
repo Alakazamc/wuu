@@ -1419,8 +1419,7 @@ button.conversation-status-capsule,
   max-width: 100%;
 }
 
-/* A read-only description of the list: one type step below reading text,
- * no row surfaces, and the same status marks as the info panel's TODO list. */
+/* A read-only list using the UI text baseline and the info panel's status marks. */
 .conversation-status-todo-card {
   display: flex;
   position: absolute;
@@ -1434,14 +1433,14 @@ button.conversation-status-capsule,
   flex-direction: column;
   gap: 6px;
   margin: 0;
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-3);
   overflow: auto;
   border: 1px solid var(--shell-todo-card-border);
   border-radius: var(--radius-sm);
   background: var(--shell-todo-card-bg);
   box-shadow: var(--shadow-pop);
-  font-size: var(--font-sm);
-  line-height: round(nearest, calc(var(--font-sm) * 1.5), 2px);
+  font-size: var(--font-ui);
+  line-height: round(nearest, calc(var(--font-ui) * 1.5), 2px);
   list-style: none;
   opacity: 0;
   visibility: hidden;
@@ -1494,7 +1493,7 @@ button.conversation-status-capsule,
 }
 
 .conversation-status-todo-card li.is-in_progress .conversation-status-todo-marker {
-  color: var(--wuu-accent);
+  color: var(--shell-todo-card-ink);
 }
 
 .conversation-status-todo-card li.is-in_progress .conversation-status-todo-marker > svg {

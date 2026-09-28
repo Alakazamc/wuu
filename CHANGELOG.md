@@ -10,6 +10,9 @@ Versioning rules are documented in [the release guide](docs/en/project/release.m
 
 ### Changed
 
+- Desktop emphasis follows the theme's neutral text color instead of orange.
+  TODO markers stay neutral across tool details, the info panel, and the status
+  popover, which now uses the UI text baseline and balanced padding.
 - Composer drafts use the conversation's reading line height, and query bubbles
   and drafts keep text the same distance from their frames at every font size.
   The latest turn sits one group gap above the input at every window width,

@@ -1043,7 +1043,7 @@
 }
 
 .composer-queue-action.edit:hover {
-  color: var(--accent-warm);
+  color: var(--wuu-accent);
 }
 
 .composer-queue-action.danger:hover {

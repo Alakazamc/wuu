@@ -61,9 +61,9 @@ Success, warning, and danger tints are `--success-soft`, `--warning-soft`, and `
 
 ### Current implementation accents
 
-The renderer currently defines `--wuu-accent` and `--wuu-accent-press` with vermillion defaults, plus `--interaction-accent` for sliders. These describe existing implementation, not a requirement that Wuu's brand be red. The boards retain their computed values in a compact implementation reference, separate from the neutral foundation and status palette.
+The renderer defaults to neutral emphasis: `--wuu-accent` follows the theme's strong text color (dark in light mode, light in dark mode), and `--wuu-accent-press` mixes it toward the canvas. Sliders use the same accent through `--interaction-accent`. Extension themes can still override the public accent, pressed, and on-accent tokens.
 
-Existing accent uses include status indicators as well as controls. Review each use by purpose before changing it; do not globally replace red with gray or repurpose status tokens as brand colors. This specification does not change product styles or theme overrides.
+Keep status semantics separate from emphasis. TODO progress uses text colors and distinct marks, while high context usage uses warning color. Success, warning, danger, links, and focus retain their semantic colors rather than becoming neutral merely because the accent is neutral.
 
 ## Typography
 
