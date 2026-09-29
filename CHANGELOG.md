@@ -8,6 +8,11 @@ Versioning rules are documented in [the release guide](docs/en/project/release.m
 
 ## [Unreleased]
 
+### Added
+
+- Desktop app zoom shortcuts (Command/Ctrl + plus, minus, and zero), with a
+  centered percentage indicator, saved zoom, and a 50%–200% range.
+
 ### Changed
 
 - The macOS DMG installer background is wordless and white, so a resized
