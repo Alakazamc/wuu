@@ -35,6 +35,9 @@ Versioning rules are documented in [the release guide](docs/en/project/release.m
 - Fix multi-line `edit_file` replacements copied from `read_file` on CRLF files,
   preserving CRLF endings and exact unique-match checks.
 
+- Honor PreCompact and PostCompact hooks when resetting context windows, and
+  preserve the active history when a hook rejects overflow recovery.
+
 - Editing a message after context compaction now retracts the selected message
   and following messages, preserving the correct conversation on resume and fork.
 - xAI OAuth now reads credentials from the auth store on each request, so existing
