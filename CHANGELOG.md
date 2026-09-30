@@ -49,6 +49,10 @@ Versioning rules are documented in [the release guide](docs/en/project/release.m
   finishes after switching conversations or closing a split pane. Pending files
   remain removable, and sends wait for their bytes before submitting.
 
+- Keep desktop text diffs readable when file contents mention Git binary markers.
+- Show Git patches for oversized text previews and submodule changes instead of
+  comparing incomplete or unavailable file contents.
+
 - Harden MCP transport compatibility, request timeouts, OAuth refresh recovery,
   local server cleanup, bounded reads, catalog refreshes, and oversized results.
 - Keep a trusted project `.mcp.json` server's definition when its settings
