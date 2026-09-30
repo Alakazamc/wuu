@@ -48,6 +48,9 @@ Versioning rules are documented in [the release guide](docs/en/project/release.m
 
 - Harden MCP transport compatibility, request timeouts, OAuth refresh recovery,
   local server cleanup, bounded reads, catalog refreshes, and oversized results.
+- Keep a trusted project `.mcp.json` server's definition when its settings
+  switch is toggled off and back on; startup preferences layer over the project
+  entry rather than replacing it.
 
 - Bound MCP call cleanup: a cancelled call no longer waits on the server's answer
   to `notifications/cancelled`, and stdio sends stop when their call ends rather
