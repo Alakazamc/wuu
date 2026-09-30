@@ -32,6 +32,9 @@ Versioning rules are documented in [the release guide](docs/en/project/release.m
   parent exits, including children that could leave a promoted command's stop
   request waiting indefinitely for output pipes to close.
 
+- Stop reasoning and partial-answer streaming indicators when a turn ends,
+  retaining received text and discarding unfinished tool drafts.
+
 - Fix multi-line `edit_file` replacements copied from `read_file` on CRLF files,
   preserving CRLF endings and exact unique-match checks.
 
