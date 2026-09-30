@@ -32,6 +32,9 @@ Versioning rules are documented in [the release guide](docs/en/project/release.m
   parent exits, including children that could leave a promoted command's stop
   request waiting indefinitely for output pipes to close.
 
+- Fix multi-line `edit_file` replacements copied from `read_file` on CRLF files,
+  preserving CRLF endings and exact unique-match checks.
+
 - Editing a message after context compaction now retracts the selected message
   and following messages, preserving the correct conversation on resume and fork.
 
