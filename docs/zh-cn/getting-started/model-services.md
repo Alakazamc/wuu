@@ -18,7 +18,11 @@
 
 ## 当前 OpenAI 和 Anthropic 模型
 
-目录已包含 `gpt-6-sol`、`gpt-6-luna`、`claude-opus-5-5` 和 `claude-fable-5-1`。已有会话和工作区选择保持不变，需要使用时主动切换模型。
+目录已包含 `gpt-6.1-sol`、`gpt-6-sol`、`gpt-6-luna`、`claude-opus-5-5` 和 `claude-fable-5-1`。已有会话和工作区选择保持不变，需要使用时主动切换模型。
+
+GPT-6.1 Sol 支持 `low`、`medium`（默认）、`high`、`xhigh` 和 `max`，不支持 `none` 或 `minimal`。工具调用必须使用 Responses；官方 OpenAI 连接未明确指定协议时，Wuu 自动选择 Responses。明确指定的协议和自定义端点协议保持不变，使用工具前请选 Responses。Fast 条目通过优先处理请求同一个 `gpt-6.1-sol` 模型，API 价格为标准模式的两倍，欧盟数据驻留不支持 Fast。标准模式缓存读取为每百万 token 0.10 美元，输入超过 272K token 时费率提高。详见官方 [GPT-6.1 Sol 规格](https://developers.openai.com/api/docs/models/gpt-6.1-sol)。
+
+通过已有 Codex 订阅使用 GPT-6.1 Sol 时，复用本机 Codex 登录并刷新订阅模型列表。账号返回基础模型后，Wuu 才会为其添加 Fast 别名；API 目录收录不代表账号拥有订阅访问权限。订阅请求继续使用 Codex 认证和订阅上下文预算策略，不要求 OpenAI API key，也不直接套用 API 输入上限。API 价格不是订阅额度估算。外部 Codex 引擎仍使用自身的模型发现和登录机制。
 
 GPT-6 Sol 和 Luna 支持 `none` 至 `max` 推理档位，默认 `medium`。Fast 条目使用同一个模型，通过优先处理提供不同速度和价格。对这两个模型，官方 OpenAI 连接未指定协议时，Wuu 默认使用 Responses。如果明确选择了 Chat Completions，使用推理和工具时请切换为 Responses；Chat Completions 仅在 `none` 档位支持它们的工具调用。自定义端点保留原有协议。详见官方 [Sol](https://developers.openai.com/api/docs/models/gpt-6-sol) 和 [Luna](https://developers.openai.com/api/docs/models/gpt-6-luna) 规格。
 

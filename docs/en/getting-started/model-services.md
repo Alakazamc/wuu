@@ -18,7 +18,11 @@ The composer's selection belongs to the conversation, or to the draft before its
 
 ## Current OpenAI and Anthropic models
 
-The catalog includes `gpt-6-sol`, `gpt-6-luna`, `claude-opus-5-5`, and `claude-fable-5-1`. Existing conversation and workspace selections remain unchanged; select a new model when you want to use it.
+The catalog includes `gpt-6.1-sol`, `gpt-6-sol`, `gpt-6-luna`, `claude-opus-5-5`, and `claude-fable-5-1`. Existing conversation and workspace selections remain unchanged; select a new model when you want to use it.
+
+GPT-6.1 Sol supports `low`, `medium` (default), `high`, `xhigh`, and `max`; it does not support `none` or `minimal`. Tool calls require Responses, which Wuu selects when an official OpenAI connection has no explicit transport. Explicit and custom-endpoint transports remain unchanged: select Responses before using tools. Its Fast entry sends `gpt-6.1-sol` with priority processing at twice the standard API price; Fast is unavailable with EU data residency. Standard cached input costs $0.10 per million tokens, with higher rates above 272K input tokens. See the official [GPT-6.1 Sol specification](https://developers.openai.com/api/docs/models/gpt-6.1-sol).
+
+To use GPT-6.1 Sol through an existing Codex subscription, reuse your local Codex login and refresh the subscription model list. Wuu adds the Fast alias when the account advertises the base model; the API catalog alone does not establish subscription access. Subscription requests keep Codex authentication and the subscription context-budget policy, rather than requiring an OpenAI API key or assuming the API input limit. API prices are not subscription quota estimates. The external Codex engine continues to use its own model discovery and login.
 
 GPT-6 Sol and Luna support reasoning levels from `none` through `max`, defaulting to `medium`. Their Fast entries use the same model with priority processing and a different price. Wuu defaults an unspecified official OpenAI connection to Responses for these models. If you explicitly selected Chat Completions, choose Responses for reasoning with tools; Chat Completions supports their tool calls only at `none`. Custom endpoints retain their configured transport. See the official [Sol](https://developers.openai.com/api/docs/models/gpt-6-sol) and [Luna](https://developers.openai.com/api/docs/models/gpt-6-luna) specifications.
 

@@ -10,6 +10,10 @@ Versioning rules are documented in [the release guide](docs/en/project/release.m
 
 ### Added
 
+- GPT-6.1 Sol and Fast model entries with Responses tool calling, supported
+  reasoning levels, updated cache pricing, and existing Codex subscription-login
+  reuse and account-discovered aliases.
+
 - Selectable execution environments for workspace tools, with isolated or shared
   filesystems, retained profiles, remote process controls, artifact transfer,
   and desktop configuration.
