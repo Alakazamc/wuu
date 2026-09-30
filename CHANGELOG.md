@@ -37,6 +37,9 @@ Versioning rules are documented in [the release guide](docs/en/project/release.m
 
 - Editing a message after context compaction now retracts the selected message
   and following messages, preserving the correct conversation on resume and fork.
+- Keep attachments in their original conversation draft when file preparation
+  finishes after switching conversations or closing a split pane. Pending files
+  remain removable, and sends wait for their bytes before submitting.
 
 - Harden MCP transport compatibility, request timeouts, OAuth refresh recovery,
   local server cleanup, bounded reads, catalog refreshes, and oversized results.
