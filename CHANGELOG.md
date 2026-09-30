@@ -67,6 +67,10 @@ Versioning rules are documented in [the release guide](docs/en/project/release.m
   implicit default environment variable during credential resolution. Explicit
   `api_key_env` and `auth_token_env` settings continue to take priority.
 
+- Recover Responses WebSocket follow-ups when the provider loses the cached
+  previous response, resending full conversation history within existing retry
+  limits and tool replay safeguards.
+
 ## [2026.9.29] - 2026-09-29
 
 ### Contributors
