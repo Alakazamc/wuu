@@ -28,6 +28,9 @@ Versioning rules are documented in [the release guide](docs/en/project/release.m
   a toy-block fort built around the Applications folder.
 
 ### Fixed
+- Edit conversation titles from the desktop title bar with a double click, while
+  preserving keyboard rename and the surrounding window drag area.
+
 - Load explicitly selected skills deterministically through `/skill` drafts, preserving
   source identity, thread checkout, queued instructions, and built-in command behavior.
   Resolve project-local selections to the chosen checkout, including the first turn
