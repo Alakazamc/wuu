@@ -37,6 +37,9 @@ Versioning rules are documented in [the release guide](docs/en/project/release.m
 
 - Editing a message after context compaction now retracts the selected message
   and following messages, preserving the correct conversation on resume and fork.
+- xAI OAuth now reads credentials from the auth store on each request, so existing
+  clients and conversations pick up a new sign-in and stop using the session
+  after sign-out.
 - Keep queued input the Core rejected or lost: a message refused at admission
   (for example by a `UserPromptSubmit` hook) is held with the reason, and queued
   messages survive a Core restart as paused input instead of being removed.
