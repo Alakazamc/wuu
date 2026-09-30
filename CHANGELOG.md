@@ -25,6 +25,11 @@ Versioning rules are documented in [the release guide](docs/en/project/release.m
   a toy-block fort built around the Applications folder.
 
 ### Fixed
+- Load explicitly selected skills deterministically through `/skill` drafts, preserving
+  source identity, thread checkout, queued instructions, and built-in command behavior.
+  Resolve project-local selections to the chosen checkout, including the first turn
+  of a new worktree; reject stale or cross-project selections without silent fallback.
+
 - Respect named `@@` context in file patches so edits cannot silently target
   matching code before that context; reject missing or ambiguous context before
   writing.
