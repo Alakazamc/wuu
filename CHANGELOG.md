@@ -49,6 +49,10 @@ Versioning rules are documented in [the release guide](docs/en/project/release.m
 - Harden MCP transport compatibility, request timeouts, OAuth refresh recovery,
   local server cleanup, bounded reads, catalog refreshes, and oversized results.
 
+- Bound MCP call cleanup: a cancelled call no longer waits on the server's answer
+  to `notifications/cancelled`, and stdio sends stop when their call ends rather
+  than blocking on a full pipe. The transport closes if a frame may be half-written.
+
 ## [2026.9.29] - 2026-09-29
 
 ### Contributors
