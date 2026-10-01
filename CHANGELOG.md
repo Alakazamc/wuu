@@ -23,6 +23,9 @@ Versioning rules are documented in [the release guide](docs/en/project/release.m
 
 ### Changed
 
+- Video attachments show larger, unobstructed previews with only a play button;
+  native controls appear on playback.
+
 - Fast mode and its reset action share the model popover header, keeping the
   model and reasoning controls compact with keyboard access and cost hints.
   Leading icons, labels, and slider share a content guide; the thumb reaches
