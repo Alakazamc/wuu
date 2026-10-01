@@ -90,6 +90,10 @@ Versioning rules are documented in [the release guide](docs/en/project/release.m
   and the bell's first-run bubble became a mark-all-read action.
 
 ### Fixed
+- Preserve reading positions when reopening tool and reasoning details, start
+  completed history at the beginning, and keep tools and reasoning in event
+  order without a delayed scroll after opening.
+
 - Edit conversation titles from the desktop title bar with a double click, while
   preserving keyboard rename and the surrounding window drag area.
 
