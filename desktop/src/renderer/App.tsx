@@ -744,6 +744,7 @@ export function App(): JSX.Element {
     openWorkspaceProjectTab,
     syncWorkspaceProjectTab,
     showWorkspaceToolPicker,
+    resumeWorkspaceViewTab,
     focusWorkspaceViewTab,
     closeWorkspaceViewTab,
     closeWorkspaceViewTabsWhere,
@@ -5567,6 +5568,7 @@ export function App(): JSX.Element {
           onOpenTool={openWorkspaceTool}
           onOpenPluginTool={openWorkspacePluginTool}
           onShowTools={showWorkspaceToolPicker}
+          onResumeTab={resumeWorkspaceViewTab}
           onCloseTab={closeWorkspaceViewTab}
           onDirtyFileTabsChange={rememberWorkspaceDirtyFiles}
           onReorderTabs={reorderWorkspaceViewTabs}

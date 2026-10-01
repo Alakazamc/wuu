@@ -25,6 +25,21 @@ It renders the real first-run component without the product preload, app-server,
 
 The [mascot lab](../../../desktop/dev/mascot/README.md) uses `npm --prefix desktop run lab:mascot`. Use the full `make dev` path when the change depends on native behavior, IPC, or real session state. Keep temporary screenshots in ignored output directories and use synthetic content in committed fixtures.
 
+## Workspace new pages
+
+The right panel's plus button creates a closable **New page** tab. Choosing a tool
+replaces that page in place; if the tool is already open, Wuu closes the new page
+and focuses its existing tab. Installed extensions appear under **More tools**.
+**Continue viewing** links to up to four currently open files, diffs, or delivered
+artifacts; it is absent when none are open. Closing a page restores
+the previously active tab.
+
+Run `npm --prefix desktop run test:e2e:workspace-new-tab` for production-renderer
+checks of selection, singleton reuse, close recovery, keyboard navigation, and
+extension loading through a synthetic bridge. Screenshots and `results.json` in
+`desktop/out/workspace-new-tab-e2e/` cover light/dark themes, 14px/20px UI sizes,
+and wide/narrow windows. This does not validate a live app-server or browser engine.
+
 ## Conversation image previews
 
 Message and inline tool images reserve a responsive 4:3 preview area before

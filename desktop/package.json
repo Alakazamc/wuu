@@ -39,6 +39,7 @@
     "test:e2e:image-layout": "npm run build && electron scripts/image-layout-e2e.cjs",
     "test:e2e:conversation-scroll": "npm run build && electron scripts/conversation-scroll-e2e.cjs",
     "test:e2e:artifact-preview": "npm run build && electron scripts/artifact-preview-e2e.cjs",
+    "test:e2e:workspace-new-tab": "npm run build && electron scripts/workspace-new-tab-e2e.cjs",
     "test:e2e:process-handoff": "npm run build && electron scripts/process-handoff-e2e.cjs",
     "test:e2e:process-mascot-clip": "npm run build && electron scripts/process-mascot-clip-e2e.cjs",
     "test:e2e:window-resize": "npm run build && electron scripts/window-resize-perf-e2e.cjs",
