@@ -32,6 +32,17 @@ Versioning rules are documented in [the release guide](docs/en/project/release.m
 
 ### Changed
 
+- Share equivalent quota HTTP reads only while they are pending, preserving
+  credential isolation, independent cancellation, and fresh later refreshes.
+
+- Limit private shell-geometry style updates inside message flow, reducing
+  repeated styling while long conversations reflow during resizing.
+- Reduce repeated schema inspection when opening session history and metadata.
+- Reuse loaded history during conversation restoration instead of rereading it
+  and building a turn projection that is immediately discarded.
+- Release acknowledged remote-control output without copying the pending replay
+  buffer, preserving reconnect ordering and queue limits.
+
 - Conversation search uses a single list with project labels and highlighted
   matching excerpts. Message matches navigate to and briefly highlight their
   history position. Keyword searches include archived conversations without
