@@ -110,6 +110,9 @@ Versioning rules are documented in [the release guide](docs/en/project/release.m
 
 ### Fixed
 
+- Preserve each conversation’s composer draft across related-session split
+  opening, replacement, closing, and navigation; prevent delayed loads from
+  overriding newer navigation or pane choices.
 - Keep image inspections in aggregated tool activity, with previews loaded on
   expansion while explicitly presented images retain their output order.
 - Preserve the latest reasoning-effort choice during pending updates, keeping
