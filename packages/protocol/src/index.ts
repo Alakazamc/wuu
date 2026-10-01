@@ -2726,7 +2726,8 @@ export type WuuDesktopApi = {
     variant?: string,
     permissionMode?: string,
     threadId?: string,
-    speed?: string
+    speed?: string,
+    targetContext?: RuntimeContext
   ) => Promise<ConfigModelUpdateResult>;
   removeProvider: (
     provider: string,
